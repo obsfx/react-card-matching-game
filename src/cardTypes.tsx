@@ -1,4 +1,4 @@
-const cards = [
+const cardTypes: string[] = [
     "ace_of_spades",
     "two_of_spades",
     "three_of_spades",
@@ -14,4 +14,4 @@ const cards = [
     "queen_of_spades"
 ];
 
-export default cards;
+export default cardTypes;

@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
-import CardTypes from '../cards';
+import CardTypes from '../cardTypes';
 
 import Card from './Card';
 
-const Deck = props => {
+type deckProps = {
+  cardAmount: number
+}
+
+const Deck = (props: deckProps) => {
   const pairCount = props.cardAmount;
 
   let selectedCardTypes = [];
@@ -14,8 +18,9 @@ const Deck = props => {
     selectedCardTypes.push(selectedCardType, selectedCardType);
   }
 
-  let shuffle = arr => {
-    let array = [].concat(arr);
+  let shuffle = (arr: string[]) => {
+    let emptyArr: string[] = [];
+    let array: string[] = emptyArr.concat(arr);
     let currentIndex = array.length;
     let temporaryValue;
     let randomIndex;
@@ -32,10 +37,10 @@ const Deck = props => {
     return array;
   }
 
-  let [ cardPool, _ ] = useState(shuffle(selectedCardTypes));
-  let [ flippedCards, setFlippedCards ] = useState([]);
+  let cardPool = useState(shuffle(selectedCardTypes))[0];
+  let [ flippedCards, setFlippedCards ] = useState<number[]>([]);
 
-  let cardFlipStateEvents = [];
+  let cardFlipStateEvents: Function[] = [];
 
   useEffect(() => {
     console.log(flippedCards);
@@ -53,10 +58,6 @@ const Deck = props => {
     }
   }, [flippedCards]);
 
-  const registerCardFlipStateSetEvent = setFn => {
-    cardFlipStateEvents.push(setFn);
-  }
-
   return(
     <div className="deck">
       {
@@ -67,8 +68,8 @@ const Deck = props => {
             cardType={e}
             isShown={true}
             isFlipped={false}
-            registerCardFlipStateSetEvent={registerCardFlipStateSetEvent}
-            pushToFlippedCards={ idx => setFlippedCards([ ...flippedCards, idx ])}
+            registerCardFlipStateSetEvent={ (setFn: Function) => cardFlipStateEvents.push(setFn) }
+            pushToFlippedCards={ (idx: number) => setFlippedCards([ ...flippedCards, idx ])}
           />
         ))
       }
