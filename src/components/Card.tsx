@@ -1,36 +1,38 @@
 import React, 
   { 
     useState, 
-    useEffect,
-    TransitionEvent
+    useImperativeHandle,
+    forwardRef,
+    TransitionEvent,
   } from 'react';
 
 type cardProps = {
   idx: number,
   cardType: string,
-  isShown: boolean,
   isFlipped: boolean,
-  registerCardFlipStateSetEvent: Function,
   pushToFlippedCards: Function
 }
 
-const Card = (props: cardProps) => {
+export type cardRef = {
+  setFlipState: Function
+}
+
+const Card = forwardRef<cardRef, cardProps>((props, ref) => {
+  console.log('Card: Render');
   let { 
     idx,
     cardType, 
-    isShown, 
     isFlipped,
-    registerCardFlipStateSetEvent,
     pushToFlippedCards
   } = props;
 
   let [ flipState, setFlipState ] = useState(isFlipped);
 
-  useEffect(() => {
-    registerCardFlipStateSetEvent(setFlipState);
-  }, [registerCardFlipStateSetEvent]);
-
-  if (!isShown) return null;
+  useImperativeHandle(ref, () => {
+    return {
+      setFlipState,
+    }
+  });
 
   const handleClick = () => {
     if (isFlipped) return;
@@ -46,16 +48,17 @@ const Card = (props: cardProps) => {
   return (
     <div 
       className="card-container" 
-      onClick={ handleClick } >
+      onClick={handleClick}>
       <div 
         id="card" 
-        className={ `card ${!flipState ? 'back-flipped' : ''}` } 
-        onTransitionEnd={ handleTransitionEnd }>
-        <div className={ `card-face card-front ${cardType}` }></div>
+        className={`card ${!flipState ? 'back-flipped' : ''}`} 
+        onTransitionEnd={handleTransitionEnd}>
+        <div className={`card-face card-front ${cardType}`}></div>
         <div className="card-face card-back"></div>
       </div>
     </div>
   )
-}
+});
+
 
 export default Card;
