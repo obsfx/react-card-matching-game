@@ -11,7 +11,9 @@ import CardTypes from '../cardTypes';
 import Card, { cardRef } from './Card';
 
 type deckProps = {
-  cardAmount: number
+  pairCount: number,
+  deckWidth: number,
+  cardWidth: number
 }
 
 const Deck = (props: deckProps) => {
@@ -19,7 +21,11 @@ const Deck = (props: deckProps) => {
   // [x] 1- useRef 
   // 2- useCallback, useMemo, Memo API
   //console.log('Deck: Render');
-  let pairCount: number = props.cardAmount;
+  let { 
+    pairCount,
+    deckWidth,
+    cardWidth
+  } = props;
 
   let cardRefs: MutableRefObject<cardRef[]> = useRef([]);
 
@@ -82,13 +88,15 @@ const Deck = (props: deckProps) => {
   }, [flippedCards, cardTypes]);
 
   return(
-    <div className="deck">
+    <div className="deck" 
+      style={{ maxWidth: deckWidth, minHeight: deckWidth * 0.71}}>
       {
         cardTypes.map((cardType: string, i: number) => (
           <Card 
             ref={(ref: cardRef) => cardRefs.current[i] = ref}
             key={i}
             idx={i}
+            width={cardWidth}
             cardType={cardType}
             pushToFlippedCards={(idx: number) => setFlippedCards(flippedCards.concat(idx))}
           />

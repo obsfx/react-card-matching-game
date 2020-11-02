@@ -8,6 +8,7 @@ import React,
 
 type cardProps = {
   idx: number,
+  width: number,
   cardType: string,
   pushToFlippedCards: Function
 }
@@ -21,6 +22,7 @@ const Card = forwardRef<cardRef, cardProps>((props, ref) => {
   //console.log('Card: Render');
   let { 
     idx,
+    width,
     cardType, 
     pushToFlippedCards
   } = props;
@@ -49,6 +51,7 @@ const Card = forwardRef<cardRef, cardProps>((props, ref) => {
   return (
     <div 
       className={`card-container ${disabled ? 'card-disabled' : ''}`} 
+      style={{ width, height: width * 1.422}}
       onClick={handleClick}>
       <div 
         id="card" 
