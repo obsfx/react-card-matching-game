@@ -18,7 +18,7 @@ const Deck = (props: deckProps) => {
   // TODO: 2 WAY
   // [x] 1- useRef 
   // 2- useCallback, useMemo, Memo API
-  console.log('Deck: Render');
+  //console.log('Deck: Render');
   let pairCount: number = props.cardAmount;
 
   let cardRefs: MutableRefObject<cardRef[]> = useRef([]);
@@ -60,17 +60,24 @@ const Deck = (props: deckProps) => {
 
   useEffect(() => {
     console.log('flipped cards effect fired');
-    if (flippedCards.length === 2) {
-      let [ a, b ] = flippedCards;
+    console.log(flippedCards);
 
-      if (cardTypes[a] === cardTypes[b]) {
-        alert('BRUH');
-      } else {
-        cardRefs.current[a].setFlipState(false);
-        cardRefs.current[b].setFlipState(false);
+    let i: number = 0;
+    while (i < flippedCards.length - 1) {
+      let a: number | undefined = flippedCards.shift();
+      let b: number | undefined = flippedCards.shift();
+
+      if (a !== undefined && b !== undefined) {
+        if (cardTypes[a] === cardTypes[b]) {
+          cardRefs.current[a].setDisabled(true);
+          cardRefs.current[b].setDisabled(true);
+        } else {
+          cardRefs.current[a].setFlipState(false);
+          cardRefs.current[b].setFlipState(false);
+        }
       }
 
-      setFlippedCards([]);
+      setFlippedCards(flippedCards);
     }
   }, [flippedCards, cardTypes]);
 
@@ -83,7 +90,6 @@ const Deck = (props: deckProps) => {
             key={i}
             idx={i}
             cardType={cardType}
-            isFlipped={false}
             pushToFlippedCards={(idx: number) => setFlippedCards(flippedCards.concat(idx))}
           />
         ))
