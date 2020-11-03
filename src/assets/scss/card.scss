@@ -1,4 +1,7 @@
 .card-container {
+  float: left;
+  margin: 5px;
+  border-radius: 5px;
   perspective: 600px;
   transition: all ease-in-out 0.2s;
   cursor: pointer;
@@ -10,10 +13,10 @@
   }
 
   &.card-disabled {
+    background-color: #d2d2d2;
     cursor: initial;
     transition: all ease-in-out 0.5s;
     transform: scale(0.95);
-    opacity: 0.4;
   }
 
   .card {
@@ -45,9 +48,7 @@
     .card-face-disabled {
       transition: all ease-in-out 0.25s;
       box-shadow: none;
-      background: none;
-      background-color: #aaa;
-      border: 1px solid #aaa;
+      opacity: 0.15;
 
       &:hover {
         box-shadow: none;

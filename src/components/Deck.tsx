@@ -12,8 +12,7 @@ import Card, { cardRef } from './Card';
 
 type deckProps = {
   pairCount: number,
-  deckWidth: number,
-  cardWidth: number
+  deckSize: number,
 }
 
 const Deck = (props: deckProps) => {
@@ -23,8 +22,7 @@ const Deck = (props: deckProps) => {
   //console.log('Deck: Render');
   let { 
     pairCount,
-    deckWidth,
-    cardWidth
+    deckSize,
   } = props;
 
   let cardRefs: MutableRefObject<cardRef[]> = useRef([]);
@@ -87,21 +85,26 @@ const Deck = (props: deckProps) => {
     }
   }, [flippedCards, cardTypes]);
 
+  let colCount: number = 8;
+  let cardWidth: number = Math.floor((deckSize - (colCount * 10) - 30) / colCount);
+
   return(
     <div className="deck" 
-      style={{ maxWidth: deckWidth, minHeight: deckWidth * 0.71}}>
-      {
-        cardTypes.map((cardType: string, i: number) => (
-          <Card 
-            ref={(ref: cardRef) => cardRefs.current[i] = ref}
-            key={i}
-            idx={i}
-            width={cardWidth}
-            cardType={cardType}
-            pushToFlippedCards={(idx: number) => setFlippedCards(flippedCards.concat(idx))}
-          />
-        ))
-      }
+      style={{ width: deckSize }}>
+      <div className="deck-wrapper">
+        {
+          cardTypes.map((cardType: string, i: number) => (
+            <Card 
+              ref={(ref: cardRef) => cardRefs.current[i] = ref}
+              key={i}
+              idx={i}
+              width={cardWidth}
+              cardType={cardType}
+              pushToFlippedCards={(idx: number) => setFlippedCards(flippedCards.concat(idx))}
+            />
+          ))
+        }
+      </div>
     </div>
   )
 }

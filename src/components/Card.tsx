@@ -1,10 +1,10 @@
 import React, 
-  { 
-    useState, 
-    useImperativeHandle,
-    forwardRef,
-    TransitionEvent,
-  } from 'react';
+{ 
+  useState, 
+  useImperativeHandle,
+  forwardRef,
+  TransitionEvent,
+} from 'react';
 
 type cardProps = {
   idx: number,

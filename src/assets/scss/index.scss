@@ -1,10 +1,5 @@
 @import '../fonts/OpenSans/stylesheet.css';
 
-@import './card.scss';
-@import './card-imgs.scss';
-
-@import './deck.scss';
-
 * {
   box-sizing: border-box;
   padding: 0;
@@ -12,6 +7,11 @@
 }
 
 body {
-  color: white;
   font-family: 'Open Sans Condensed';
 }
+
+@import './card.scss';
+@import './card-imgs.scss';
+@import './deck.scss';
+@import './hud.scss';
+@import './playground.scss';
