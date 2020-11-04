@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 type hudProps = {
   time: string,
+  progress: number
 }
 
 const HUD = (props: hudProps) => {
   let {
     time,
+    progress
   } = props;
-
-  let [ progress, setProgress ] = useState(0);
 
   return (
     <div className="hud">

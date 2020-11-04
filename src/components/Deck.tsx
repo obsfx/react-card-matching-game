@@ -2,41 +2,51 @@ import React,
 { 
   useState, 
   useEffect,
-  useRef,
-  MutableRefObject
+  MutableRefObject,
 } from 'react';
 
-import CardTypes from '../cardTypes';
-
+import { cardTypes, state, deckWidth, cardWidth } from '../constants';
 import Card, { cardRef } from './Card';
 
 type deckProps = {
+  cardRefs: MutableRefObject<cardRef[]>,
   pairCount: number,
-  deckSize: number,
+  gameState: state,
+  handleCardMatch: Function,
+  handleCardMisMatch: Function,
+  handleStageEnd: Function
 }
 
 const Deck = (props: deckProps) => {
-  // TODO: 2 WAY
-  // [x] 1- useRef 
-  // 2- useCallback, useMemo, Memo API
-  //console.log('Deck: Render');
   let { 
+    cardRefs,
     pairCount,
-    deckSize,
+    gameState,
+    handleCardMatch,
+    handleCardMisMatch,
+    handleStageEnd
   } = props;
 
-  let cardRefs: MutableRefObject<cardRef[]> = useRef([]);
-
-  let [ cardTypes, setCardTypes ] = useState<string[]>([]);
+  let [ renderCards, setRenderCards ] = useState<boolean>(false);
+  let [ cardPool, setCardPool ] = useState<string[]>([]);
   let [ flippedCards, setFlippedCards ] = useState<number[]>([]);
 
+  const handleTransformEnd = (i: number, isDisabled: boolean, isFlipped: boolean) => {
+    if (!isDisabled && isFlipped) {
+      setFlippedCards(flippedCards.concat(i));
+    }
+
+    if (i === 0 && gameState === state.stageSwitching && !isFlipped) {
+      handleStageEnd();
+    }
+  }
+
   useEffect(() => {
-    console.log('init effect fired');
-    let cardTypesBuffer: string[] = [];
+    let cardPoolBuffer: string[] = [];
 
     for (let i = 0; i < pairCount; i++) {
-      let selectedCardType: string = CardTypes[Math.floor(Math.random() * CardTypes.length)];
-      cardTypesBuffer.push(selectedCardType, selectedCardType);
+      let selectedCardType: string = cardTypes[Math.floor(Math.random() * cardTypes.length)];
+      cardPoolBuffer.push(selectedCardType, selectedCardType);
     }
 
     let shuffle = (arr: string[]) => {
@@ -58,49 +68,42 @@ const Deck = (props: deckProps) => {
       return array;
     }
 
-    cardRefs.current = new Array(cardTypesBuffer.length);
-    setCardTypes(shuffle(cardTypesBuffer));
-  }, [pairCount]);
+    cardRefs.current = new Array(cardPoolBuffer.length);
+
+    setCardPool(shuffle(cardPoolBuffer));
+    setRenderCards(true);
+  }, [pairCount, cardRefs]);
 
   useEffect(() => {
-    console.log('flipped cards effect fired');
-    console.log(flippedCards);
-
-    let i: number = 0;
-    while (i < flippedCards.length - 1) {
+    while (flippedCards.length - 1 > 0) {
       let a: number | undefined = flippedCards.shift();
       let b: number | undefined = flippedCards.shift();
 
       if (a !== undefined && b !== undefined) {
-        if (cardTypes[a] === cardTypes[b]) {
-          cardRefs.current[a].setDisabled(true);
-          cardRefs.current[b].setDisabled(true);
+        if (cardPool[a] === cardPool[b]) {
+          handleCardMatch(a, b);
         } else {
-          cardRefs.current[a].setFlipState(false);
-          cardRefs.current[b].setFlipState(false);
+          handleCardMisMatch(a, b);
         }
       }
 
       setFlippedCards(flippedCards);
     }
-  }, [flippedCards, cardTypes]);
-
-  let colCount: number = 8;
-  let cardWidth: number = Math.floor((deckSize - (colCount * 10) - 30) / colCount);
+  }, [flippedCards, cardPool, handleCardMatch, handleCardMisMatch]);
 
   return(
     <div className="deck" 
-      style={{ width: deckSize }}>
+      style={{ width: deckWidth }}>
       <div className="deck-wrapper">
         {
-          cardTypes.map((cardType: string, i: number) => (
+          renderCards &&
+          cardPool.map((cardType: string, i: number) => (
             <Card 
               ref={(ref: cardRef) => cardRefs.current[i] = ref}
               key={i}
-              idx={i}
               width={cardWidth}
               cardType={cardType}
-              pushToFlippedCards={(idx: number) => setFlippedCards(flippedCards.concat(idx))}
+              handleTransformEnd={(isDisabled: boolean, isFlipped: boolean) => handleTransformEnd(i, isDisabled, isFlipped)}
             />
           ))
         }

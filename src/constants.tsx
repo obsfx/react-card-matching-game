@@ -1,4 +1,4 @@
-const cardTypes: string[] = [
+export const cardTypes: string[] = [
     "ace_of_spades",
     "two_of_spades",
     "three_of_spades",
@@ -14,4 +14,12 @@ const cardTypes: string[] = [
     "queen_of_spades"
 ];
 
-export default cardTypes;
+export enum state {
+  onStage,
+  stageSwitching
+}
+
+const deckColCount: number = 8;
+
+export const deckWidth: number = 600;
+export const cardWidth: number = Math.floor((deckWidth - (deckColCount* 10) - 30) / deckColCount);
