@@ -1,67 +1,125 @@
-import React, 
-{ 
-  useState, 
-  useEffect,
-  useRef,
-  MutableRefObject
-} from 'react';
-
-import { state } from '../constants';
-import { cardRef } from './Card';
-
+import React, { useState, useEffect, useCallback } from 'react';
+import { cardObj, cardStateProperties } from './Card';
 import Deck from './Deck';
 import HUD from './HUD';
+
+export type gameState = {
+  renderCards: boolean,
+  pairCount: number,
+  matchedPairCount: number,
+  cards: cardObj[],
+  flippedCards: number[]
+}
 
 const Game = () => {
   console.log('App: Render');
 
-  let cardRefs: MutableRefObject<cardRef[]> = useRef([]);
+  const [ gameState, setGameState ] = useState<gameState>({
+    renderCards: true,
+    pairCount: 3,
+    matchedPairCount: 0,
+    cards: [],
+    flippedCards: []
+  });
 
-  let [ gameState, setGameState ] = useState<state>(state.onStage);
-  let [ currentPairCount, setCurrentPairCount ] = useState<number>(1);
-  let [ matchedPairCount, setMatchedPairCount ] = useState<number>(0);
+  const setRenderStatus = useCallback((renderCards: boolean) => {
+    setGameState((prevState: gameState) => ({
+      ...prevState,
+      renderCards
+    }));
+  }, [])
 
-  const handleCardMatch = (a: number, b: number) => {
-    cardRefs.current[a].setDisabled(true);
-    cardRefs.current[b].setDisabled(true);
+  const setCards = useCallback((cards: cardObj[]) => {
+    setGameState((prevState: gameState) => ({
+      ...prevState,
+      cards
+    }));
+  }, []);
 
-    setMatchedPairCount(matchedPairCount + 1);
-  }
+  const setCardProperty = useCallback((id: number, property: cardStateProperties, value: boolean) => {
+    setGameState((prevState: gameState) => ({
+      ...prevState,
+      cards: prevState.cards.map((card: cardObj, i: number) => {
+        if (i === id && card.state.has(property)) card.state.set(property, value);
+        return card;
+      })
+    }));
+  }, []);
 
-  const handleCardMisMatch = (a: number, b: number) => {
-    cardRefs.current[a].setFlipState(false);
-    cardRefs.current[b].setFlipState(false);
-  }
+  const setFlippedCards = useCallback((flippedCards: number[]) => {
+    setGameState((prevState: gameState) => ({
+      ...prevState,
+      flippedCards
+    }));
+  }, []);
 
-  const handleStageEnd = () => {
-    setGameState(state.onStage);
-    setCurrentPairCount(currentPairCount + 1);
-    setMatchedPairCount(0);
-  }
+  const increaseMatchedPairCount = useCallback(() => {
+    setGameState((prevState: gameState) => ({ 
+      ...prevState, 
+      matchedPairCount: prevState.matchedPairCount + 1 
+    }));
+  }, [])
+
+  const handleCardMatch = useCallback((a: number, b: number) => {
+    setGameState((prevState: gameState) => ({ 
+      ...prevState, 
+      cards: prevState.cards.map((card: cardObj, i: number) => {
+        if (i === a || i === b) card.state.set('disabled', true);
+        if (i === b) card.state.set('increaseMatchedPairCountAfterDisabled', true);
+        return card;
+      }) 
+    }));
+  }, []);
+
+  const handleCardMisMatch = useCallback((a: number, b: number) => {
+    setGameState((prevState: gameState) => ({ 
+      ...prevState, 
+      cards: prevState.cards.map((card: cardObj, i: number) => {
+        if (i === a || i === b) card.state.set('flipped', false);
+        return card;
+      }) 
+    }));
+  }, []);
+
+  const handleStageEnd = useCallback(() => {
+    setGameState((prevState: gameState) => ({ 
+      ...prevState,
+      pairCount: prevState.pairCount + 1,
+      matchedPairCount: 0
+    }));
+  }, []);
 
   useEffect(() => {
-    if (matchedPairCount === currentPairCount) {
-      setGameState(state.stageSwitching);
-
-      cardRefs.current = cardRefs.current.map((ref: cardRef) => {
-        ref.setDisabled(false);
-        ref.setFlipState(false);
-        return ref;
-      });
+    if (gameState.matchedPairCount === gameState.pairCount) {
+      setGameState((prevState: gameState) => ({
+        ...prevState,
+        cards: prevState.cards.map((card: cardObj, i: number) => {
+          if (i === 0) card.state.set('handleStageEndAfterFlippedBack', true);
+          card.state.set('disabled', false);
+          card.state.set('flipped', false);
+          return card;
+        })
+      }));
     }
-  }, [matchedPairCount, currentPairCount]);
+  }, [gameState.matchedPairCount, gameState.pairCount]);
 
   return (
     <div>
       <div className="playground">
         <HUD 
           time={'00:30'}
-          progress={ 100 / currentPairCount * matchedPairCount }
+          progress={ 100 / gameState.pairCount * gameState.matchedPairCount }
         />
         <Deck 
-          cardRefs={cardRefs}
-          pairCount={currentPairCount}
-          gameState={gameState}
+          pairCount={gameState.pairCount}
+          renderCards={gameState.renderCards}
+          cards={gameState.cards}
+          flippedCards={gameState.flippedCards}
+          increaseMatchedPairCount={increaseMatchedPairCount}
+          setRenderStatus={setRenderStatus}
+          setCards={setCards}
+          setCardProperty={setCardProperty}
+          setFlippedCards={setFlippedCards}
           handleCardMatch={handleCardMatch}
           handleCardMisMatch={handleCardMisMatch}
           handleStageEnd={handleStageEnd}

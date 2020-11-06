@@ -1,53 +1,64 @@
-import React, 
-{ 
-  useState, 
-  useImperativeHandle,
-  forwardRef,
-  TransitionEvent,
-} from 'react';
+import React, { TransitionEvent } from 'react';
 
 type cardProps = {
+  id: number,
   width: number,
   cardType: string,
-  handleTransformEnd: Function
+  flipped: boolean,
+  disabled: boolean,
+  showCardType: boolean,
+  increaseMatchedPairCountAfterDisabled: boolean,
+  handleStageEndAfterFlippedBack: boolean,
+  setCardProperty: (i: number, property: cardStateProperties, value: boolean) => void,
+  handleFlipEnd: (isDisabled: boolean, isFlipped: boolean, handleStageEndAfterFlippedBack: boolean) => void,
+  handleDisableEnd: (increaseMatchedPairCountAfterDisabled: boolean) => void
 }
 
-export type cardRef = {
-  setFlipState: Function,
-  setDisabled: Function
+export type cardStateProperties = 'type' |
+  'flipped' |
+  'disabled' |
+  'showCardType' |
+  'increaseMatchedPairCountAfterDisabled' |
+  'handleStageEndAfterFlippedBack';
+
+export type cardObj = {
+  type: string,
+  state: Map<cardStateProperties, boolean>
 }
 
-const Card = forwardRef<cardRef, cardProps>((props, ref) => {
-  //console.log('Card: Render');
+const Card = (props: cardProps) => {
   let { 
+    id,
     width,
     cardType, 
-    handleTransformEnd
+    flipped,
+    disabled,
+    showCardType,
+    increaseMatchedPairCountAfterDisabled,
+    handleStageEndAfterFlippedBack,
+    setCardProperty,
+    handleFlipEnd,
+    handleDisableEnd
   } = props;
 
-  let [ flipState, setFlipState ] = useState<boolean>(false);
-  let [ cardTypeVisible, setCardTypeVisible ] = useState<boolean>(false);
-  let [ disabled, setDisabled ] = useState<boolean>(false);
-
-  useImperativeHandle(ref, () => {
-    return {
-      setFlipState,
-      setDisabled
-    }
-  });
-
   const handleClick = () => {
-    if (flipState || disabled) return;
-    setFlipState(true);
-    setCardTypeVisible(true);
+    if (flipped || disabled) return;
+    setCardProperty(id, 'flipped', true);
+    setCardProperty(id, 'showCardType', true);
   }
 
-  const handleTransitionEnd = (e: TransitionEvent) => {
-    if (e.nativeEvent.propertyName === 'transform') {
-      handleTransformEnd(disabled, flipState);
+  const handleDisableTransitionEnd = (e: TransitionEvent) => {
+    if (e.propertyName === 'transform' && e.currentTarget === e.target && e.currentTarget.classList.contains('card-disabled')) {
+      handleDisableEnd(increaseMatchedPairCountAfterDisabled);
+    }
+  }
 
-      if (!flipState) {
-        setCardTypeVisible(false);
+  const handleFlipTransitionEnd = (e: TransitionEvent) => {
+    if (e.propertyName === 'transform' && e.currentTarget === e.target) {
+      handleFlipEnd(disabled, flipped, handleStageEndAfterFlippedBack);
+
+      if (!flipped) {
+        setCardProperty(id, 'showCardType', false);
       }
     }
   }
@@ -56,16 +67,16 @@ const Card = forwardRef<cardRef, cardProps>((props, ref) => {
     <div 
       className={`card-container ${disabled ? 'card-disabled' : ''}`} 
       style={{ width, height: width * 1.422}}
-      onClick={handleClick}>
+      onClick={handleClick}
+      onTransitionEnd={handleDisableTransitionEnd}>
       <div 
-      className={`card ${!flipState ? 'back-flipped' : ''} flip-transition`} 
-        onTransitionEnd={handleTransitionEnd}>
-        <div className={`card-face card-front ${cardTypeVisible ? cardType : ''} ${disabled ? 'card-face-disabled' : ''}`}></div>
+        className={`card ${!flipped ? 'back-flipped' : ''} flip-transition`}
+        onTransitionEnd={handleFlipTransitionEnd}>
+        <div className={`card-face card-front ${showCardType ? cardType : ''} ${disabled ? 'card-face-disabled' : ''}`}></div>
         <div className={`card-face card-back`}></div>
       </div>
     </div>
   )
-});
-
+};
 
 export default Card;

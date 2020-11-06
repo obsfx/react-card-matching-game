@@ -1,78 +1,85 @@
-import React, 
-{ 
-  useState, 
-  useEffect,
-  MutableRefObject,
-} from 'react';
-
-import { cardTypes, state, deckWidth, cardWidth } from '../constants';
-import Card, { cardRef } from './Card';
+import React, { useEffect } from 'react';
+import { cardType, cardTypes } from '../card-types';
+import { deckWidth, cardWidth } from '../constants';
+import { shuffle } from '../utils';
+import Card, { cardObj, cardStateProperties } from './Card';
 
 type deckProps = {
-  cardRefs: MutableRefObject<cardRef[]>,
   pairCount: number,
-  gameState: state,
-  handleCardMatch: Function,
-  handleCardMisMatch: Function,
-  handleStageEnd: Function
+  renderCards: boolean,
+  cards: cardObj[],
+  flippedCards: number[],
+  increaseMatchedPairCount: () => void,
+  setRenderStatus: (renderCards: boolean) => void,
+  setCards: (cards: cardObj[]) => void,
+  setCardProperty: (id: number, property: cardStateProperties, value: boolean) => void,
+  setFlippedCards: (flippedCards: number[]) => void,
+  handleCardMatch: (a: number, b: number) => void,
+  handleCardMisMatch: (a: number, b: number) => void,
+  handleStageEnd: () => void
 }
 
 const Deck = (props: deckProps) => {
   let { 
-    cardRefs,
     pairCount,
-    gameState,
+    renderCards,
+    cards,
+    flippedCards,
+    increaseMatchedPairCount,
+    setRenderStatus,
+    setCards,
+    setCardProperty,
+    setFlippedCards,
     handleCardMatch,
     handleCardMisMatch,
     handleStageEnd
   } = props;
 
-  let [ renderCards, setRenderCards ] = useState<boolean>(false);
-  let [ cardPool, setCardPool ] = useState<string[]>([]);
-  let [ flippedCards, setFlippedCards ] = useState<number[]>([]);
-
-  const handleTransformEnd = (i: number, isDisabled: boolean, isFlipped: boolean) => {
+  const handleFlipEnd = (i: number, isDisabled: boolean, isFlipped: boolean, handleStageEndAfterFlippedBack: boolean) => {
     if (!isDisabled && isFlipped) {
+      setCardProperty(i, 'flipped', true);
       setFlippedCards(flippedCards.concat(i));
     }
 
-    if (i === 0 && gameState === state.stageSwitching && !isFlipped) {
+    if (handleStageEndAfterFlippedBack && !isFlipped) {
+      setCardProperty(i, 'handleStageEndAfterFlippedBack', false);
       handleStageEnd();
     }
   }
 
-  useEffect(() => {
-    let cardPoolBuffer: string[] = [];
-
-    for (let i = 0; i < pairCount; i++) {
-      let selectedCardType: string = cardTypes[Math.floor(Math.random() * cardTypes.length)];
-      cardPoolBuffer.push(selectedCardType, selectedCardType);
+  const handleDisableEnd = (i: number, increaseMatchedPairCountAfterDisabled: boolean) => {
+    if (increaseMatchedPairCountAfterDisabled) {
+      setCardProperty(i, 'increaseMatchedPairCountAfterDisabled', false);
+      increaseMatchedPairCount();
     }
+  }
 
-    let shuffle = (arr: string[]) => {
-      let emptyArr: string[] = [];
-      let array: string[] = emptyArr.concat(arr);
-      let currentIndex = array.length;
-      let temporaryValue;
-      let randomIndex;
-
-      while (currentIndex !== 0) {
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
-
-        temporaryValue = array[currentIndex];
-        array[currentIndex] = array[randomIndex];
-        array[randomIndex] = temporaryValue;
+  useEffect(() => {
+    const createCardObj = (type: cardType): cardObj => {
+      let card: cardObj = {
+        type,
+        state: new Map<cardStateProperties, boolean>()
       }
 
-      return array;
+      card.state.set('flipped', false);
+      card.state.set('disabled', false);
+      card.state.set('showCardType', false);
+      card.state.set('increaseMatchedPairCountAfterDisabled', false);
+      card.state.set('handleStageEndAfterFlippedBack', false);
+
+      return card;
     }
 
-    cardRefs.current = new Array(cardPoolBuffer.length);
+    let cardsBuffer: cardObj[] = [];
 
-    setCardPool(shuffle(cardPoolBuffer));
-    setRenderCards(true);
-  }, [pairCount, cardRefs]);
+    for (let i = 0; i < pairCount; i++) {
+      let selectedCardType: cardType = cardTypes[Math.floor(Math.random() * cardTypes.length)];
+      cardsBuffer.push(createCardObj(selectedCardType), createCardObj(selectedCardType));
+    }
+
+    setCards(shuffle(cardsBuffer));
+    setRenderStatus(true);
+  }, [pairCount, setCards, setRenderStatus]);
 
   useEffect(() => {
     while (flippedCards.length - 1 > 0) {
@@ -80,7 +87,7 @@ const Deck = (props: deckProps) => {
       let b: number | undefined = flippedCards.shift();
 
       if (a !== undefined && b !== undefined) {
-        if (cardPool[a] === cardPool[b]) {
+        if (cards[a].type === cards[b].type) {
           handleCardMatch(a, b);
         } else {
           handleCardMisMatch(a, b);
@@ -89,7 +96,7 @@ const Deck = (props: deckProps) => {
 
       setFlippedCards(flippedCards);
     }
-  }, [flippedCards, cardPool, handleCardMatch, handleCardMisMatch]);
+  }, [flippedCards, cards, handleCardMatch, handleCardMisMatch, setFlippedCards]);
 
   return(
     <div className="deck" 
@@ -97,13 +104,20 @@ const Deck = (props: deckProps) => {
       <div className="deck-wrapper">
         {
           renderCards &&
-          cardPool.map((cardType: string, i: number) => (
+          cards.map((card: cardObj, i: number) => (
             <Card 
-              ref={(ref: cardRef) => cardRefs.current[i] = ref}
               key={i}
+              id={i}
               width={cardWidth}
-              cardType={cardType}
-              handleTransformEnd={(isDisabled: boolean, isFlipped: boolean) => handleTransformEnd(i, isDisabled, isFlipped)}
+              cardType={card.type}
+              flipped={card.state.get('flipped') || false}
+              disabled={card.state.get('disabled') || false}
+              showCardType={card.state.get('showCardType') || false}
+              increaseMatchedPairCountAfterDisabled={card.state.get('increaseMatchedPairCountAfterDisabled') || false}
+              handleStageEndAfterFlippedBack={card.state.get('handleStageEndAfterFlippedBack') || false}
+              setCardProperty={setCardProperty}
+              handleFlipEnd={(isDisabled: boolean, isFlipped: boolean, handleStageEndAfterFlippedBack: boolean) => handleFlipEnd(i, isDisabled, isFlipped, handleStageEndAfterFlippedBack)}
+              handleDisableEnd={(increaseMatchedPairCountAfterDisabled: boolean) => handleDisableEnd(i, increaseMatchedPairCountAfterDisabled)}
             />
           ))
         }
