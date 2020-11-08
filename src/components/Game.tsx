@@ -19,8 +19,6 @@ export type gameState = {
 }
 
 const Game = () => {
-  console.log('App: Render');
-
   const initialGameState: gameState = {
     state: 'start',
     renderExtraTimeIndicator: false,

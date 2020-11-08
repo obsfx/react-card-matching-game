@@ -1,4 +1,10 @@
-# Getting Started with Create React App
+# React Card Matching Game
+
+![](https://raw.githubusercontent.com/obsfx/react-card-matching-game/gh-pages/media/demo.gif)
+
+This is a simple card matching game that was built using React and React Hooks.
+
+------
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 

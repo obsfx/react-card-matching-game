@@ -6,7 +6,7 @@ type overlayProps = {
   handleStart: () => void
 }
 const Overlay = (props: overlayProps) => {
-  let { 
+  const { 
     state,
     level,
     handleStart 
@@ -19,7 +19,7 @@ const Overlay = (props: overlayProps) => {
           <>
             <h2>Card Matching Game</h2>
             <p>Built with <strong>React</strong>.</p>
-            <p><a href="github.com/obsfx/react-card-matching-game">github.com/obsfx/react-card-matching-game</a></p>
+            <p><a href="https://github.com/obsfx/react-card-matching-game">github.com/obsfx/react-card-matching-game</a></p>
             <div className="start-button" onClick={handleStart}>Start</div>
           </>
         }

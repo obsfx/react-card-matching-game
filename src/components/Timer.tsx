@@ -5,10 +5,10 @@ type timerProps = {
 }
 
 const Timer = (props: timerProps) => {
-  let { setSeconds } = props;
+  const { setSeconds } = props;
 
   useEffect(() => {
-    let interval: NodeJS.Timeout = setInterval(() => setSeconds(), 1000);
+    const interval: NodeJS.Timeout = setInterval(() => setSeconds(), 1000);
     return () => clearInterval(interval);
   }, [setSeconds]);
 

@@ -18,7 +18,7 @@ type deckProps = {
 }
 
 const Deck = (props: deckProps) => {
-  let { 
+  const { 
     pairCount,
     cards,
     flippedCards,

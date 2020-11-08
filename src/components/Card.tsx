@@ -27,7 +27,7 @@ export type cardObj = {
 }
 
 const Card = (props: cardProps) => {
-  let { 
+  const { 
     id,
     width,
     cardType, 

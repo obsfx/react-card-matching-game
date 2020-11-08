@@ -10,7 +10,7 @@ type hudProps = {
 }
 
 const HUD = (props: hudProps) => {
-  let {
+  const {
     secs,
     progress,
     level,
