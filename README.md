@@ -2,7 +2,7 @@
 
 [Demo](https://obsfx.github.io/react-card-matching-game)
 
-![](https://raw.githubusercontent.com/obsfx/react-card-matching-game/gh-pages/media/demo.gif)
+![](https://raw.githubusercontent.com/obsfx/react-card-matching-game/main/demo.gif)
 
 This is a simple card matching game that was built using React and React Hooks.
 
