@@ -1,31 +1,44 @@
 import React from 'react';
 
 type hudProps = {
-  time: string,
-  progress: number
+  secs: number,
+  progress: number,
+  extraTime: number,
+  showExtraTimeIndicator: boolean,
+  setExtraTimeIndicator: (renderExtraTimeIndicator: boolean) => void
 }
 
 const HUD = (props: hudProps) => {
   let {
-    time,
-    progress
+    secs,
+    progress,
+    extraTime,
+    showExtraTimeIndicator,
+    setExtraTimeIndicator
   } = props;
 
   return (
     <div className="hud">
       <div className="timer">
-        {time}
+        { 
+          showExtraTimeIndicator && 
+          <div 
+          className="extra-time" 
+          onAnimationEnd={() => setExtraTimeIndicator(false)}>
+            +{ Math.floor(extraTime / 60) }
+            : 
+            { extraTime % 60 < 10 ? `0${extraTime % 60}` : extraTime % 60 }
+          </div> 
+        }
+        { Math.floor(secs / 60) }
+        :
+        { secs % 60 < 10 ? `0${secs % 60}` : secs % 60 }
       </div>
 
       <div className="progress-bar">
         <div className="bar">
           <div className="progress" style={{ width: `${progress}%` }}></div>
         </div>
-      </div>
-
-      <div className="info">
-        a card matching game built with react. <br />
-        source: <a href="https://github.com/obsfx/react-card-matching-game">github.com/obsfx/react-card-matching-game</a>
       </div>
     </div>
   )

@@ -1,12 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { cardObj, cardStateProperties } from './Card';
 import Deck from './Deck';
+import Overlay from './Overlay';
 import HUD from './HUD';
+import Timer from './Timer';
 
 export type gameState = {
   renderCards: boolean,
+  renderExtraTimeIndicator: boolean,
+  startTimer: boolean,
   pairCount: number,
   matchedPairCount: number,
+  secs: number,
+  extraSecs: number,
   cards: cardObj[],
   flippedCards: number[]
 }
@@ -15,12 +21,21 @@ const Game = () => {
   console.log('App: Render');
 
   const [ gameState, setGameState ] = useState<gameState>({
-    renderCards: true,
+    renderCards: false,
+    renderExtraTimeIndicator: false,
+    startTimer: false,
     pairCount: 3,
     matchedPairCount: 0,
+    secs: 60,
+    extraSecs: 0,
     cards: [],
     flippedCards: []
   });
+
+  const startGame = () => {
+    setRenderStatus(true);
+    setTimerStatus(true);
+  }
 
   const setRenderStatus = useCallback((renderCards: boolean) => {
     setGameState((prevState: gameState) => ({
@@ -28,6 +43,34 @@ const Game = () => {
       renderCards
     }));
   }, [])
+
+  const setTimerStatus = useCallback((startTimer: boolean) => {
+    setGameState((prevState: gameState) => ({
+      ...prevState,
+     startTimer 
+    }));
+  }, [])
+
+  const decreaseSeconds = useCallback(() => {
+    setGameState((prevState: gameState) => ({
+      ...prevState,
+      secs: prevState.secs - 1
+    }));
+  }, []);
+
+  const setExtraTime = useCallback((extraSecs: number) => {
+    setGameState((prevState: gameState) => ({
+      ...prevState,
+      extraSecs
+    }));
+  }, []);
+
+  const setExtraTimeIndicator = useCallback((renderExtraTimeIndicator: boolean) => {
+    setGameState((prevState: gameState) => ({
+      ...prevState,
+      renderExtraTimeIndicator
+    }));
+  }, []);
 
   const setCards = useCallback((cards: cardObj[]) => {
     setGameState((prevState: gameState) => ({
@@ -82,12 +125,22 @@ const Game = () => {
   }, []);
 
   const handleStageEnd = useCallback(() => {
-    setGameState((prevState: gameState) => ({ 
-      ...prevState,
-      pairCount: prevState.pairCount + 1,
-      matchedPairCount: 0
-    }));
-  }, []);
+    setGameState((prevState: gameState) => {
+      let pairCount: number = prevState.pairCount + 1;
+      let extraTime: number = prevState.pairCount * 4;
+
+      setExtraTime(extraTime);
+
+      return {
+        ...prevState,
+        pairCount,
+        secs: prevState.secs + extraTime,
+        matchedPairCount: 0
+      }
+    });
+
+    setExtraTimeIndicator(true);
+  }, [setExtraTime, setExtraTimeIndicator]);
 
   useEffect(() => {
     if (gameState.matchedPairCount === gameState.pairCount) {
@@ -105,25 +158,35 @@ const Game = () => {
 
   return (
     <div>
-      <div className="playground">
+      <div className="game">
         <HUD 
-          time={'00:30'}
-          progress={ 100 / gameState.pairCount * gameState.matchedPairCount }
+          secs={gameState.secs}
+          progress={100 / gameState.pairCount * gameState.matchedPairCount}
+          extraTime={gameState.extraSecs}
+          showExtraTimeIndicator={gameState.renderExtraTimeIndicator}
+          setExtraTimeIndicator={setExtraTimeIndicator}
         />
-        <Deck 
-          pairCount={gameState.pairCount}
-          renderCards={gameState.renderCards}
-          cards={gameState.cards}
-          flippedCards={gameState.flippedCards}
-          increaseMatchedPairCount={increaseMatchedPairCount}
-          setRenderStatus={setRenderStatus}
-          setCards={setCards}
-          setCardProperty={setCardProperty}
-          setFlippedCards={setFlippedCards}
-          handleCardMatch={handleCardMatch}
-          handleCardMisMatch={handleCardMisMatch}
-          handleStageEnd={handleStageEnd}
-        />
+        <div className="playground">
+          { gameState.startTimer && <Timer setSeconds={decreaseSeconds} /> }
+          { gameState.renderCards ?
+            <Deck 
+              pairCount={gameState.pairCount}
+              cards={gameState.cards}
+              flippedCards={gameState.flippedCards}
+              increaseMatchedPairCount={increaseMatchedPairCount}
+              setRenderStatus={setRenderStatus}
+              setCards={setCards}
+              setCardProperty={setCardProperty}
+              setFlippedCards={setFlippedCards}
+              handleCardMatch={handleCardMatch}
+              handleCardMisMatch={handleCardMisMatch}
+              handleStageEnd={handleStageEnd}
+            /> :
+            <Overlay 
+              handleStart={startGame}
+            />
+          }
+        </div>
       </div>
     </div>
   );

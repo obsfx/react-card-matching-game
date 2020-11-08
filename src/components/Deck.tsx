@@ -6,7 +6,6 @@ import Card, { cardObj, cardStateProperties } from './Card';
 
 type deckProps = {
   pairCount: number,
-  renderCards: boolean,
   cards: cardObj[],
   flippedCards: number[],
   increaseMatchedPairCount: () => void,
@@ -22,7 +21,6 @@ type deckProps = {
 const Deck = (props: deckProps) => {
   let { 
     pairCount,
-    renderCards,
     cards,
     flippedCards,
     increaseMatchedPairCount,
@@ -103,7 +101,6 @@ const Deck = (props: deckProps) => {
       style={{ width: deckWidth }}>
       <div className="deck-wrapper">
         {
-          renderCards &&
           cards.map((card: cardObj, i: number) => (
             <Card 
               key={i}

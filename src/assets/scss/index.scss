@@ -1,4 +1,4 @@
-@import '../fonts/OpenSans/stylesheet.css';
+@import '../fonts/Quicksand/stylesheet.css';
 
 * {
   box-sizing: border-box;
@@ -7,7 +7,7 @@
 }
 
 body {
-  font-family: 'Open Sans Condensed';
+  font-family: 'Quicksand';
 }
 
 @import './card.scss';
@@ -15,3 +15,5 @@ body {
 @import './deck.scss';
 @import './hud.scss';
 @import './playground.scss';
+@import './game.scss';
+@import './overlay.scss';

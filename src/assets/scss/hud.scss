@@ -1,5 +1,18 @@
+@keyframes extra-time-sliding {
+  from { 
+    top: 50%;
+    opacity: 1;
+  }
+
+  to { 
+    top: -50%;
+    opacity: 0;
+  }
+}
+
 .hud {
   display: flex;
+  justify-content: center;
   border-radius: 5px;
   margin-bottom: 15px;
 
@@ -9,6 +22,19 @@
     padding: 10px 30px;
     display: flex;
     background-color: #f2f2f2;
+    position: relative;
+
+    .extra-time {
+      position: absolute;
+      right: 5px;
+      font-size: 18px;
+      font-weight: bold;
+      color: green;
+      animation-name: extra-time-sliding;
+      animation-duration: 1s;
+      animation-iteration-count: 1;
+      animation-fill-mode: forwards;
+    }
   }
 
   .progress-bar {
@@ -29,19 +55,6 @@
         background-color: #ea0000;
         transition: all ease-in-out 0.3s;
       }
-    }
-  }
-
-  .info {
-    align-self: center;
-    padding-left: 25px;
-    font-size: 10px;
-    color: #444;
-    font-weight: bold;
-
-    a {
-      text-decoration: none;
-      color: #ea0000;
     }
   }
 }
