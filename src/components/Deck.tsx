@@ -9,7 +9,6 @@ type deckProps = {
   cards: cardObj[],
   flippedCards: number[],
   increaseMatchedPairCount: () => void,
-  setRenderStatus: (renderCards: boolean) => void,
   setCards: (cards: cardObj[]) => void,
   setCardProperty: (id: number, property: cardStateProperties, value: boolean) => void,
   setFlippedCards: (flippedCards: number[]) => void,
@@ -24,7 +23,6 @@ const Deck = (props: deckProps) => {
     cards,
     flippedCards,
     increaseMatchedPairCount,
-    setRenderStatus,
     setCards,
     setCardProperty,
     setFlippedCards,
@@ -76,8 +74,7 @@ const Deck = (props: deckProps) => {
     }
 
     setCards(shuffle(cardsBuffer));
-    setRenderStatus(true);
-  }, [pairCount, setCards, setRenderStatus]);
+  }, [pairCount, setCards]);
 
   useEffect(() => {
     while (flippedCards.length - 1 > 0) {

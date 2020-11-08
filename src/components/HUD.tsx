@@ -3,6 +3,7 @@ import React from 'react';
 type hudProps = {
   secs: number,
   progress: number,
+  level: number,
   extraTime: number,
   showExtraTimeIndicator: boolean,
   setExtraTimeIndicator: (renderExtraTimeIndicator: boolean) => void
@@ -12,6 +13,7 @@ const HUD = (props: hudProps) => {
   let {
     secs,
     progress,
+    level,
     extraTime,
     showExtraTimeIndicator,
     setExtraTimeIndicator
@@ -36,6 +38,9 @@ const HUD = (props: hudProps) => {
       </div>
 
       <div className="progress-bar">
+        <div className="level-indicator">
+          Level <span className="level-number">{level}</span>
+        </div>
         <div className="bar">
           <div className="progress" style={{ width: `${progress}%` }}></div>
         </div>

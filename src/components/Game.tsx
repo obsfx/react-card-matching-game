@@ -6,13 +6,14 @@ import HUD from './HUD';
 import Timer from './Timer';
 
 export type gameState = {
-  renderCards: boolean,
+  state: 'start' | 'action' | 'endgame',
   renderExtraTimeIndicator: boolean,
   startTimer: boolean,
   pairCount: number,
   matchedPairCount: number,
   secs: number,
   extraSecs: number,
+  level: number,
   cards: cardObj[],
   flippedCards: number[]
 }
@@ -20,42 +21,48 @@ export type gameState = {
 const Game = () => {
   console.log('App: Render');
 
-  const [ gameState, setGameState ] = useState<gameState>({
-    renderCards: false,
+  const initialGameState: gameState = {
+    state: 'start',
     renderExtraTimeIndicator: false,
     startTimer: false,
     pairCount: 3,
     matchedPairCount: 0,
     secs: 60,
     extraSecs: 0,
+    level: 1,
     cards: [],
     flippedCards: []
+  }
+
+  const [ gameState, setGameState ] = useState<gameState>({
+    ...initialGameState
   });
 
   const startGame = () => {
-    setRenderStatus(true);
-    setTimerStatus(true);
+    setGameState({
+      ...initialGameState,
+      state: 'action',
+      startTimer: true
+    });
   }
 
-  const setRenderStatus = useCallback((renderCards: boolean) => {
-    setGameState((prevState: gameState) => ({
-      ...prevState,
-      renderCards
-    }));
-  }, [])
-
-  const setTimerStatus = useCallback((startTimer: boolean) => {
-    setGameState((prevState: gameState) => ({
-      ...prevState,
-     startTimer 
-    }));
-  }, [])
-
   const decreaseSeconds = useCallback(() => {
-    setGameState((prevState: gameState) => ({
-      ...prevState,
-      secs: prevState.secs - 1
-    }));
+    setGameState((prevState: gameState) => {
+      let currentSecs: number = prevState.secs - 1;
+
+      if (currentSecs < 0) {
+        setGameState((prevState: gameState) => ({
+          ...prevState,
+          state: 'endgame',
+          startTimer: false
+        }));
+      }
+
+      return {
+        ...prevState,
+        secs: currentSecs < 0 ? 0 : currentSecs
+      }
+    });
   }, []);
 
   const setExtraTime = useCallback((extraSecs: number) => {
@@ -69,6 +76,13 @@ const Game = () => {
     setGameState((prevState: gameState) => ({
       ...prevState,
       renderExtraTimeIndicator
+    }));
+  }, []);
+
+  const increaseLevel = useCallback(() => {
+    setGameState((prevState: gameState) => ({
+      ...prevState,
+      level: prevState.level + 1
     }));
   }, []);
 
@@ -140,7 +154,8 @@ const Game = () => {
     });
 
     setExtraTimeIndicator(true);
-  }, [setExtraTime, setExtraTimeIndicator]);
+    increaseLevel();
+  }, [setExtraTime, setExtraTimeIndicator, increaseLevel]);
 
   useEffect(() => {
     if (gameState.matchedPairCount === gameState.pairCount) {
@@ -161,6 +176,7 @@ const Game = () => {
       <div className="game">
         <HUD 
           secs={gameState.secs}
+          level={gameState.level}
           progress={100 / gameState.pairCount * gameState.matchedPairCount}
           extraTime={gameState.extraSecs}
           showExtraTimeIndicator={gameState.renderExtraTimeIndicator}
@@ -168,23 +184,26 @@ const Game = () => {
         />
         <div className="playground">
           { gameState.startTimer && <Timer setSeconds={decreaseSeconds} /> }
-          { gameState.renderCards ?
+          { (gameState.state === 'start' || gameState.state === 'endgame') &&
+            <Overlay 
+              state={gameState.state}
+              level={gameState.level}
+              handleStart={startGame}
+            />
+          }
+          { gameState.state === 'action' &&
             <Deck 
               pairCount={gameState.pairCount}
               cards={gameState.cards}
               flippedCards={gameState.flippedCards}
               increaseMatchedPairCount={increaseMatchedPairCount}
-              setRenderStatus={setRenderStatus}
               setCards={setCards}
               setCardProperty={setCardProperty}
               setFlippedCards={setFlippedCards}
               handleCardMatch={handleCardMatch}
               handleCardMisMatch={handleCardMisMatch}
               handleStageEnd={handleStageEnd}
-            /> :
-            <Overlay 
-              handleStart={startGame}
-            />
+            /> 
           }
         </div>
       </div>
