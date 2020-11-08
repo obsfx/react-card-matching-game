@@ -6,6 +6,10 @@
 
 This is a simple card matching game that was built using React and React Hooks.
 
+### Game Visuals
++ Card Faces: https://opengameart.org/content/playing-cards-vector-png
++ Card Back: https://opengameart.org/content/colorful-poker-card-back
+
 ------
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
